@@ -8,7 +8,8 @@
 <style>
 :root {
   --bg: #faf8f3;
-  --border: #d6cebe;
+  --ln: #b8a898;
+  --lw: 2px;
   --text: #2c2418;
   --text2: #6b5e4a;
   --text3: #9b8c78;
@@ -21,129 +22,160 @@
   --blue-light: #e8eef8;
   --coral: #8b3a20;
   --coral-light: #f7ece8;
-  --shadow-sm: 0 1px 6px rgba(0,0,0,0.06);
+  --border: #d6cebe;
+  --shadow-sm: 0 1px 5px rgba(0,0,0,0.07);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
-/* 手機不改結構，橫向捲動 */
-html { min-width: 960px; }
+html, body { min-width: 980px; }
 body {
   font-family: 'LXGW WenKai TC', serif;
   background: var(--bg);
   color: var(--text);
-  padding: 28px 32px 52px;
-  min-width: 960px;
+  padding: 28px 24px 52px;
 }
 
 /* ── 標題 ── */
-.page-header {
+.page-header { position:relative; text-align:center; margin-bottom:28px; }
+.page-header h1 { font-size:24px; font-weight:700; letter-spacing:.12em; }
+.rev { position:absolute; right:0; top:50%; transform:translateY(-50%); font-size:12px; color:var(--text3); white-space:nowrap; }
+
+/* ══════════════════════════════
+   連線：全部用 table-like 定位
+   ══════════════════════════════ */
+
+/* 垂直線：單純 div */
+.vline {
+  width: var(--lw);
+  background: var(--ln);
+  align-self: center;
+  flex-shrink: 0;
+}
+.v8  { height: 8px; }
+.v10 { height:10px; }
+.v12 { height:12px; }
+.v14 { height:14px; }
+.v16 { height:16px; }
+
+/* ══════════════════════════════
+   樹狀分支：用 table 模擬
+   parent → 垂直線 → 水平橋 → 多個子欄
+   水平橋用 relative 容器 + border-top 畫線
+   每個子欄用 relative + border-left 畫垂直臂
+   ══════════════════════════════ */
+
+/* 分支容器：子欄橫排 */
+.branch {
+  display: flex;
+  align-items: flex-start;
   position: relative;
-  text-align: center;
-  margin-bottom: 32px;
 }
-.page-header h1 {
-  font-size: 24px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+
+/* 每個子欄 */
+.bcol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
 }
-.page-header .rev {
+
+/* 子欄頂部的 L 形連線
+   原理：每個 bcol 頂部放一個 .arm div
+   .arm 高度 = 垂直臂長
+   .arm 寬度 = 100%（佔滿整欄）
+   .arm 的左半有 border-left（垂直臂）
+   .arm 的上半有 border-top（水平臂）
+   用 ::before 畫左半 border，::after 不需要
+*/
+.arm {
+  width: 100%;
+  height: 14px;
+  position: relative;
+  flex-shrink: 0;
+}
+/* 水平臂：橫跨整個 arm */
+.arm::before {
+  content: '';
   position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 12px;
-  color: var(--text3);
-  white-space: nowrap;
+  top: 0;
+  left: 50%;   /* 從本欄中心 */
+  right: 0;    /* 到右端（下一欄的中心由下一欄負責） */
+  height: var(--lw);
+  background: var(--ln);
+}
+/* 垂直臂：從水平線往下到 arm 底部 */
+.arm::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: calc(50% - var(--lw)/2);
+  width: var(--lw);
+  height: 100%;
+  background: var(--ln);
 }
 
-/* ── 垂直線 ── */
-.vl { width: 1px; background: var(--border); align-self: center; }
-.h12 { height: 12px; } .h14 { height: 14px; }
-.h16 { height: 16px; } .h10 { height: 10px; }
-.h8  { height: 8px; }
+/* 最左欄：水平臂只往右（從中心到右端）→ 預設已是 left:50% right:0 */
+/* 最右欄：水平臂只往左（從左端到中心） */
+.arm.last::before {
+  left: 0;
+  right: 50%;
+}
+/* 中間欄：水平臂從左端到右端（全寬） */
+.arm.mid::before {
+  left: 0;
+  right: 0;
+}
 
-/* ── 節點 ── */
+/* ── 節點樣式 ── */
 .nd {
   border-radius: 8px;
   text-align: center;
   white-space: nowrap;
   padding: 7px 16px;
   font-size: 13px;
-}
-.nd-root   { background:#e6f2ef; border:1.5px solid var(--teal); color:var(--teal); font-weight:700; font-size:15px; letter-spacing:.1em; padding:9px 26px; }
-.nd-priest { background: var(--gold-light); border:1.5px solid var(--gold-mid); color:var(--gold); font-weight:700; }
-.nd-sec    { background: var(--bg); border:1px solid var(--border); color:var(--text2); font-size:12px; padding:5px 16px; }
-.nd-teal   { background: var(--teal-light); border:1.5px solid var(--teal);  color:var(--teal);  font-weight:700; padding:7px 20px; }
-.nd-blue   { background: var(--blue-light);  border:1.5px solid var(--blue);  color:var(--blue);  font-weight:700; padding:7px 20px; }
-.nd-coral  { background: var(--coral-light); border:1.5px solid var(--coral); color:var(--coral); font-weight:700; padding:7px 20px; }
-.nd-period { background: var(--teal-light); border:1px solid #9cc4b8; color:var(--teal); font-weight:700; font-size:12px; padding:5px 36px; }
-.nd-floor  { background:#fff; border:1px solid var(--border); font-size:12px; padding:5px 10px; color:var(--text); white-space:nowrap; }
-
-/* ── 主樹 ── */
-.tree { display:flex; flex-direction:column; align-items:center; }
-
-/* ── 三組同階 ── */
-.tier-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  max-width: 940px;
-}
-.tier-hline { height:1px; background:var(--border); width:calc(100% - 80px); }
-.three-cols { display:flex; align-items:flex-start; justify-content:center; width:100%; }
-.gcol { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
-.gcol-fwu { width:160px; }
-.gcol-den { width:640px; }
-.gcol-bud { width:160px; }
-
-/* ── 6樓長一列 ── */
-.floor-hline-bar {
-  height: 1px;
-  background: var(--border);
-  width: 576px;
-}
-.floor-strip {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  width: 576px;
   flex-shrink: 0;
 }
-.floor-unit { display:flex; flex-direction:column; align-items:center; width:96px; flex-shrink:0; }
-.nd-floor {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  line-height: 1.6;
-}
-.nd-floor .fl-title { font-size:12px; font-weight:700; color:var(--text); white-space:nowrap; }
-.nd-floor .fl-name  { font-size:11px; color:var(--text2); white-space:nowrap; min-height:1em; }
+.nd-root   { background:#e6f2ef; border:1.5px solid var(--teal); color:var(--teal); font-weight:700; font-size:15px; letter-spacing:.1em; padding:9px 26px; }
+.nd-priest { background:var(--gold-light); border:1.5px solid var(--gold-mid); color:var(--gold); font-weight:700; }
+.nd-sec    { background:var(--bg); border:1px solid var(--border); color:var(--text2); font-size:12px; padding:5px 16px; }
+.nd-teal   { background:var(--teal-light); border:1.5px solid var(--teal); color:var(--teal); font-weight:700; padding:8px 32px; font-size:14px; }
+.nd-blue   { background:var(--blue-light); border:1.5px solid var(--blue); color:var(--blue); font-weight:700; padding:7px 20px; }
+.nd-coral  { background:var(--coral-light); border:1.5px solid var(--coral); color:var(--coral); font-weight:700; padding:7px 20px; }
+.nd-period { background:var(--teal-light); border:1px solid #9cc4b8; color:var(--teal); font-weight:700; font-size:12px; padding:5px 36px; }
+.nd-floor  { background:#fff; border:1px solid var(--border); font-size:12px; padding:5px 10px; color:var(--text); display:flex; flex-direction:column; align-items:center; line-height:1.6; white-space:nowrap; }
+.nd-floor .fl-t { font-size:12px; font-weight:700; }
+.nd-floor .fl-n { font-size:11px; color:var(--text2); min-height:1.1em; }
 
-/* ── 時段長 5欄 ── */
-.period-tree { display:flex; flex-direction:column; align-items:center; width:580px; flex-shrink:0; }
-.period-hline { height:1px; background:var(--border); width:576px; flex-shrink:0; }
-.period-cols { display:flex; align-items:flex-start; width:580px; flex-shrink:0; }
-.pb { display:flex; flex-direction:column; align-items:center; width:116px; flex-shrink:0; padding:0 4px; }
-.pb-head {
-  border-radius:6px; font-size:11.5px; font-weight:700;
-  text-align:center; padding:5px 6px 4px; line-height:1.5;
-  width:100%; white-space:nowrap;
-}
+/* 主樹中心對齊 */
+.main-tree { display:flex; flex-direction:column; align-items:center; }
+
+/* 三欄固定寬度 */
+.w160 { width:160px; }
+.w640 { width:640px; }
+
+/* 側欄卡 */
+.scard { background:#fff; border:1px solid var(--border); border-radius:8px; padding:7px 12px 9px; font-size:12px; text-align:center; box-shadow:var(--shadow-sm); white-space:nowrap; }
+.scard-title { font-size:11.5px; font-weight:700; margin-bottom:3px; }
+.mbox { background:#fff; border:1px solid var(--border); border-radius:6px; padding:4px 12px; font-size:11.5px; color:var(--text2); white-space:nowrap; }
+
+/* 時段長 pb-head */
+.pb-head { border-radius:6px; font-size:11.5px; font-weight:700; text-align:center; padding:5px 4px 4px; line-height:1.5; white-space:nowrap; width:calc(100% - 8px); }
 .pb-head .sub { font-weight:400; font-size:11px; display:block; }
 .pb-e { background:#e8f4f1; border:1px solid #9cc4b8; color:var(--teal); }
 .pb-m { background:#e8eef8; border:1px solid #a0b4d4; color:var(--blue); }
 .pb-l { background:#f3ede8; border:1px solid #c8a890; color:#6b3a20; }
 
-/* ── 值班卡 ── */
-.pcard { background:#fff; border:1px solid var(--border); border-radius:7px; padding:6px 7px 8px; width:100%; font-size:11px; box-shadow:var(--shadow-sm); }
-.prow { display:flex; gap:3px; margin-top:3px; color:var(--text); line-height:1.5; white-space:nowrap; }
-.pday { color:var(--text3); min-width:26px; flex-shrink:0; }
+/* 值班卡 */
+.pcard { background:#fff; border:1px solid var(--border); border-radius:7px; padding:6px 7px 8px; width:calc(100% - 8px); font-size:11px; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; align-items:center; }
+.prow { display:flex; gap:4px; margin-top:3px; color:var(--text); line-height:1.5; white-space:nowrap; justify-content:center; }
+.pday { color:var(--text3); min-width:26px; flex-shrink:0; text-align:right; }
 
-/* ── 側欄卡 ── */
-.scard { background:#fff; border:1px solid var(--border); border-radius:8px; padding:7px 12px 9px; font-size:12px; text-align:center; box-shadow:var(--shadow-sm); white-space:nowrap; }
-.scard-title { font-size:11.5px; font-weight:700; margin-bottom:4px; }
-.mbox { background:#fff; border:1px solid var(--border); border-radius:6px; padding:4px 12px; font-size:11.5px; color:var(--text2); white-space:nowrap; }
+/* 列印 */
+@media print {
+  @page { size:A4 landscape; margin:10mm; }
+  html,body { min-width:unset; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body { padding:0; }
+}
 </style>
 </head>
 <body>
@@ -153,186 +185,164 @@ body {
   <span class="rev">修訂：2026.05.15</span>
 </div>
 
-<div class="tree">
-
+<!-- 主幹 -->
+<div class="main-tree">
   <div class="nd nd-root">環保組</div>
-  <div class="vl h12"></div>
+  <div class="vline v12"></div>
   <div class="nd nd-priest">見疏法師</div>
-  <div class="vl h12"></div>
+  <div class="vline v12"></div>
   <div class="nd nd-sec">執行秘書　馬逸峯・王蜀秀</div>
-  <div class="vl h16"></div>
+  <div class="vline v16"></div>
 
-  <!-- 三組同階層 -->
-  <div class="tier-wrap">
-    <div class="tier-hline"></div>
-    <div class="three-cols">
+  <!-- 三組分支 -->
+  <div class="branch">
 
-      <!-- ① 房務組 -->
-      <div class="gcol gcol-fwu">
-        <div class="vl h12"></div>
-        <div class="nd nd-coral">房務組</div>
-        <div class="vl h12"></div>
-        <div class="scard">
-          <div class="scard-title" style="color:var(--coral)">帶坡組長</div>
-          <div>康周美紅</div>
-        </div>
-        <div class="vl h8"></div>
-        <div class="mbox">組員</div>
+    <!-- 房務組欄 -->
+    <div class="bcol w160">
+      <div class="arm"></div><!-- 最左：水平臂往右，垂直臂往下 -->
+      <div class="nd nd-coral">房務組</div>
+      <div class="vline v12"></div>
+      <div class="scard">
+        <div class="scard-title" style="color:var(--coral)">帶坡組長</div>
+        <div>康周美紅</div>
       </div>
+      <div class="vline v8"></div>
+      <div class="mbox">組員</div>
+    </div>
 
-      <!-- ② 殿堂組 -->
-      <div class="gcol gcol-den">
-        <div class="vl h12"></div>
-        <div class="nd nd-teal" style="font-size:14px;padding:8px 32px;">殿堂組</div>
-        <div class="vl h12"></div>
+    <!-- 殿堂組欄 -->
+    <div class="bcol w640">
+      <div class="arm mid"></div><!-- 中間：水平臂全寬，垂直臂往下 -->
+      <div class="nd nd-teal">殿堂組</div>
+      <div class="vline v12"></div>
 
-        <!-- 6樓長一列（正確水平連線） -->
-        <div class="floor-hline-bar"></div>
-        <div class="floor-strip">
-          <div class="floor-unit">
-            <div class="vl h12"></div>
-            <div class="nd nd-floor">
-              <span class="fl-title">一樓樓長</span>
-              <span class="fl-name">　</span>
-            </div>
-          </div>
-          <div class="floor-unit">
-            <div class="vl h12"></div>
-            <div class="nd nd-floor">
-              <span class="fl-title">二樓樓長</span>
-              <span class="fl-name">劉碧慧</span>
-            </div>
-          </div>
-          <div class="floor-unit">
-            <div class="vl h12"></div>
-            <div class="nd nd-floor">
-              <span class="fl-title">五樓樓長</span>
-              <span class="fl-name">郭旭洲</span>
-            </div>
-          </div>
-          <div class="floor-unit">
-            <div class="vl h12"></div>
-            <div class="nd nd-floor">
-              <span class="fl-title">八樓樓長</span>
-              <span class="fl-name">馬福宏</span>
-            </div>
-          </div>
-          <div class="floor-unit">
-            <div class="vl h12"></div>
-            <div class="nd nd-floor">
-              <span class="fl-title">九樓樓長</span>
-              <span class="fl-name">柳雪美</span>
-            </div>
-          </div>
-          <div class="floor-unit">
-            <div class="vl h12"></div>
-            <div class="nd nd-floor">
-              <span class="fl-title">十樓樓長</span>
-              <span class="fl-name">王蜀秀</span>
-            </div>
+      <!-- 6樓長分支 -->
+      <div class="branch">
+        <div class="bcol" style="width:96px;">
+          <div class="arm"></div>
+          <div class="nd nd-floor"><span class="fl-t">一樓樓長</span><span class="fl-n">　</span></div>
+        </div>
+        <div class="bcol" style="width:96px;">
+          <div class="arm mid"></div>
+          <div class="nd nd-floor"><span class="fl-t">二樓樓長</span><span class="fl-n">劉碧慧</span></div>
+        </div>
+        <div class="bcol" style="width:96px;">
+          <div class="arm mid"></div>
+          <div class="nd nd-floor"><span class="fl-t">五樓樓長</span><span class="fl-n">郭旭洲</span></div>
+        </div>
+        <div class="bcol" style="width:96px;">
+          <div class="arm mid"></div>
+          <div class="nd nd-floor"><span class="fl-t">八樓樓長</span><span class="fl-n">馬福宏</span></div>
+        </div>
+        <div class="bcol" style="width:96px;">
+          <div class="arm mid"></div>
+          <div class="nd nd-floor"><span class="fl-t">九樓樓長</span><span class="fl-n">柳雪美</span></div>
+        </div>
+        <div class="bcol" style="width:96px;">
+          <div class="arm last"></div>
+          <div class="nd nd-floor"><span class="fl-t">十樓樓長</span><span class="fl-n">王蜀秀</span></div>
+        </div>
+      </div><!-- /6樓長 branch -->
+
+      <div class="vline v12"></div>
+
+      <!-- 時段長 -->
+      <div class="nd nd-period">時段長</div>
+      <div class="vline v14"></div>
+
+      <!-- 5時段分支 -->
+      <div class="branch">
+
+        <!-- 早長 柳雪美 -->
+        <div class="bcol" style="width:116px;">
+          <div class="arm"></div>
+          <div class="pb-head pb-e">早長<span class="sub">柳雪美</span></div>
+          <div class="vline v10"></div>
+          <div class="pcard">
+            <div class="prow"><span class="pday">週一</span><span>張麗娟</span></div>
+            <div class="prow"><span class="pday">週二</span><span>洪美滿</span></div>
+            <div class="prow"><span class="pday">週三</span><span>張玉蘭</span></div>
+            <div class="prow"><span class="pday">週四</span><span>林文斐</span></div>
+            <div class="prow"><span class="pday">週五</span><span>陳彥汝</span></div>
+            <div class="prow"><span class="pday">週六</span><span>柳雪美</span></div>
           </div>
         </div>
 
-        <div class="vl h12"></div>
-
-        <!-- 時段長 → 5欄 -->
-        <div class="period-tree">
-          <div class="nd nd-period">時段長</div>
-          <div class="vl h14"></div>
-          <div class="period-hline"></div>
-          <div class="period-cols">
-
-            <!-- 早長 柳雪美 -->
-            <div class="pb">
-              <div class="vl h14"></div>
-              <div class="pb-head pb-e">早長<span class="sub">柳雪美</span></div>
-              <div class="vl h10"></div>
-              <div class="pcard">
-                <div class="prow"><span class="pday">週一</span><span>張麗娟</span></div>
-                <div class="prow"><span class="pday">週二</span><span>洪美滿</span></div>
-                <div class="prow"><span class="pday">週三</span><span>張玉蘭</span></div>
-                <div class="prow"><span class="pday">週四</span><span>林文斐</span></div>
-                <div class="prow"><span class="pday">週五</span><span>陳彥汝</span></div>
-                <div class="prow"><span class="pday">週六</span><span>柳雪美</span></div>
-              </div>
-            </div>
-
-            <!-- 早長 方惠玲 -->
-            <div class="pb">
-              <div class="vl h14"></div>
-              <div class="pb-head pb-e">早長<span class="sub">方惠玲</span></div>
-              <div class="vl h10"></div>
-              <div class="pcard">
-                <div class="prow"><span class="pday">週日</span><span>劉南有</span></div>
-              </div>
-            </div>
-
-            <!-- 中長 劉碧慧 -->
-            <div class="pb">
-              <div class="vl h14"></div>
-              <div class="pb-head pb-m">中長<span class="sub">劉碧慧</span></div>
-              <div class="vl h10"></div>
-              <div class="pcard">
-                <div class="prow"><span class="pday">週一</span><span>唐惠敏</span></div>
-                <div class="prow"><span class="pday"></span><span>姜力心</span></div>
-                <div class="prow"><span class="pday">週二</span><span>林玗蓉</span></div>
-                <div class="prow"><span class="pday">週三</span><span>黃秋月</span></div>
-                <div class="prow"><span class="pday">週四</span><span>林文斐</span></div>
-                <div class="prow"><span class="pday">週五</span><span>潘美桃</span></div>
-                <div class="prow"><span class="pday">週六</span><span>黃雅玲</span></div>
-                <div class="prow"><span class="pday"></span><span>陳秀英</span></div>
-              </div>
-            </div>
-
-            <!-- 中長 馬福宏 -->
-            <div class="pb">
-              <div class="vl h14"></div>
-              <div class="pb-head pb-m">中長<span class="sub">馬福宏</span></div>
-              <div class="vl h10"></div>
-              <div class="pcard">
-                <div class="prow"><span class="pday">週四</span><span>葉立橙</span></div>
-                <div class="prow"><span class="pday">週六</span><span>王姵蓉</span></div>
-              </div>
-            </div>
-
-            <!-- 晚長 王蜀秀 -->
-            <div class="pb">
-              <div class="vl h14"></div>
-              <div class="pb-head pb-l">晚長<span class="sub">王蜀秀</span></div>
-              <div class="vl h10"></div>
-              <div class="pcard">
-                <div class="prow"><span class="pday">週一</span><span>陳靜宜</span></div>
-                <div class="prow"><span class="pday">週二</span><span>謝智安</span></div>
-                <div class="prow"><span class="pday">週三</span><span>王蜀秀</span></div>
-                <div class="prow"><span class="pday"></span><span>馬逸峯</span></div>
-                <div class="prow"><span class="pday">週四</span><span>趙在籠</span></div>
-                <div class="prow"><span class="pday">週五</span><span>呂志君</span></div>
-                <div class="prow"><span class="pday">週六</span><span>張俞婷</span></div>
-                <div class="prow"><span class="pday">週日</span><span>董靜宜</span></div>
-              </div>
-            </div>
-
-          </div><!-- /period-cols -->
-        </div><!-- /period-tree -->
-
-      </div><!-- /gcol-den -->
-
-      <!-- ③ 佛像組 -->
-      <div class="gcol gcol-bud">
-        <div class="vl h12"></div>
-        <div class="nd nd-blue">佛像組</div>
-        <div class="vl h12"></div>
-        <div class="scard">
-          <div class="scard-title" style="color:var(--blue)">帶坡組長</div>
-          <div>洪秀絨・柯永祥</div>
+        <!-- 早長 方惠玲 -->
+        <div class="bcol" style="width:116px;">
+          <div class="arm mid"></div>
+          <div class="pb-head pb-e">早長<span class="sub">方惠玲</span></div>
+          <div class="vline v10"></div>
+          <div class="pcard">
+            <div class="prow"><span class="pday">週日</span><span>劉南有</span></div>
+          </div>
         </div>
-        <div class="vl h8"></div>
-        <div class="mbox">組員</div>
+
+        <!-- 中長 劉碧慧 -->
+        <div class="bcol" style="width:116px;">
+          <div class="arm mid"></div>
+          <div class="pb-head pb-m">中長<span class="sub">劉碧慧</span></div>
+          <div class="vline v10"></div>
+          <div class="pcard">
+            <div class="prow"><span class="pday">週一</span><span>唐惠敏</span></div>
+            <div class="prow"><span class="pday"></span><span>姜力心</span></div>
+            <div class="prow"><span class="pday">週二</span><span>林玗蓉</span></div>
+            <div class="prow"><span class="pday">週三</span><span>黃秋月</span></div>
+            <div class="prow"><span class="pday">週四</span><span>林文斐</span></div>
+            <div class="prow"><span class="pday">週五</span><span>潘美桃</span></div>
+            <div class="prow"><span class="pday">週六</span><span>黃雅玲</span></div>
+            <div class="prow"><span class="pday"></span><span>陳秀英</span></div>
+          </div>
+        </div>
+
+        <!-- 中長 馬福宏 -->
+        <div class="bcol" style="width:116px;">
+          <div class="arm mid"></div>
+          <div class="pb-head pb-m">中長<span class="sub">馬福宏</span></div>
+          <div class="vline v10"></div>
+          <div class="pcard">
+            <div class="prow"><span class="pday">週四</span><span>葉立橙</span></div>
+            <div class="prow"><span class="pday">週六</span><span>王姵蓉</span></div>
+          </div>
+        </div>
+
+        <!-- 晚長 王蜀秀 -->
+        <div class="bcol" style="width:116px;">
+          <div class="arm last"></div>
+          <div class="pb-head pb-l">晚長<span class="sub">王蜀秀</span></div>
+          <div class="vline v10"></div>
+          <div class="pcard">
+            <div class="prow"><span class="pday">週一</span><span>陳靜宜</span></div>
+            <div class="prow"><span class="pday">週二</span><span>謝智安</span></div>
+            <div class="prow"><span class="pday">週三</span><span>王蜀秀</span></div>
+            <div class="prow"><span class="pday"></span><span>馬逸峯</span></div>
+            <div class="prow"><span class="pday">週四</span><span>趙在籠</span></div>
+            <div class="prow"><span class="pday">週五</span><span>呂志君</span></div>
+            <div class="prow"><span class="pday">週六</span><span>張俞婷</span></div>
+            <div class="prow"><span class="pday">週日</span><span>董靜宜</span></div>
+          </div>
+        </div>
+
+      </div><!-- /時段 branch -->
+
+    </div><!-- /殿堂 bcol -->
+
+    <!-- 佛像組欄 -->
+    <div class="bcol w160">
+      <div class="arm last"></div><!-- 最右：水平臂往左，垂直臂往下 -->
+      <div class="nd nd-blue">佛像組</div>
+      <div class="vline v12"></div>
+      <div class="scard">
+        <div class="scard-title" style="color:var(--blue)">帶坡組長</div>
+        <div>洪秀絨・柯永祥</div>
       </div>
+      <div class="vline v8"></div>
+      <div class="mbox">組員</div>
+    </div>
 
-    </div><!-- /three-cols -->
-  </div><!-- /tier-wrap -->
+  </div><!-- /三組 branch -->
 
-</div><!-- /tree -->
+</div><!-- /main-tree -->
+
 </body>
 </html>
