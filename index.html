@@ -165,7 +165,45 @@ body {
 .pb-m { background:#e8eef8; border:1px solid #a0b4d4; color:var(--blue); }
 .pb-l { background:#f3ede8; border:1px solid #c8a890; color:#6b3a20; }
 
-/* 值班卡 */
+/* arm-bot：收斂臂（樓長→時段長），鏡像 arm
+   水平線在底部，垂直臂從頂往下到水平線 */
+.arm-bot {
+  width: 100%;
+  height: 14px;
+  position: relative;
+  flex-shrink: 0;
+}
+/* 水平線在底部 */
+.arm-bot::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  right: 0;
+  height: var(--lw);
+  background: var(--ln);
+}
+/* 垂直臂從頂到底 */
+.arm-bot::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: calc(50% - var(--lw)/2);
+  width: var(--lw);
+  height: 100%;
+  background: var(--ln);
+}
+.arm-bot.mid::before { left: 0; right: 0; }
+.arm-bot.last::before { left: 0; right: 50%; }
+/* center-node：中間欄放時段長節點，覆蓋偽元素，直接flex排列 */
+.arm-bot.center-node {
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.arm-bot.center-node::before,
+.arm-bot.center-node::after { display: none; }
 .pcard { background:#fff; border:1px solid var(--border); border-radius:7px; padding:6px 7px 8px; width:calc(100% - 8px); font-size:11px; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; align-items:center; }
 .prow { display:flex; gap:4px; margin-top:3px; color:var(--text); line-height:1.5; white-space:nowrap; justify-content:center; }
 .pday { color:var(--text3); min-width:26px; flex-shrink:0; text-align:right; }
@@ -216,39 +254,47 @@ body {
       <div class="nd nd-teal">殿堂組</div>
       <div class="vline v12"></div>
 
-      <!-- 6樓長分支 -->
+      <!-- 6樓長分支：各欄下方只有垂直臂 -->
       <div class="branch">
         <div class="bcol" style="width:96px;">
           <div class="arm"></div>
           <div class="nd nd-floor"><span class="fl-t">一樓樓長</span><span class="fl-n">　</span></div>
+          <div style="width:var(--lw);height:12px;background:var(--ln);"></div>
         </div>
         <div class="bcol" style="width:96px;">
           <div class="arm mid"></div>
           <div class="nd nd-floor"><span class="fl-t">二樓樓長</span><span class="fl-n">劉碧慧</span></div>
+          <div style="width:var(--lw);height:12px;background:var(--ln);"></div>
         </div>
         <div class="bcol" style="width:96px;">
           <div class="arm mid"></div>
           <div class="nd nd-floor"><span class="fl-t">五樓樓長</span><span class="fl-n">郭旭洲</span></div>
+          <div style="width:var(--lw);height:12px;background:var(--ln);"></div>
         </div>
         <div class="bcol" style="width:96px;">
           <div class="arm mid"></div>
           <div class="nd nd-floor"><span class="fl-t">八樓樓長</span><span class="fl-n">馬福宏</span></div>
+          <div style="width:var(--lw);height:12px;background:var(--ln);"></div>
         </div>
         <div class="bcol" style="width:96px;">
           <div class="arm mid"></div>
           <div class="nd nd-floor"><span class="fl-t">九樓樓長</span><span class="fl-n">柳雪美</span></div>
+          <div style="width:var(--lw);height:12px;background:var(--ln);"></div>
         </div>
         <div class="bcol" style="width:96px;">
           <div class="arm last"></div>
           <div class="nd nd-floor"><span class="fl-t">十樓樓長</span><span class="fl-n">王蜀秀</span></div>
+          <div style="width:var(--lw);height:12px;background:var(--ln);"></div>
         </div>
       </div><!-- /6樓長 branch -->
 
-      <div class="vline v12"></div>
+      <!-- 底部收斂水平線（576px = 6欄×96px） -->
+      <div style="width:576px;height:var(--lw);background:var(--ln);flex-shrink:0;"></div>
 
-      <!-- 時段長 -->
+      <!-- 時段長：置中垂直線→節點 -->
+      <div style="width:var(--lw);height:12px;background:var(--ln);"></div>
       <div class="nd nd-period">時段長</div>
-      <div class="vline v14"></div>
+      <div style="width:var(--lw);height:14px;background:var(--ln);"></div>
 
       <!-- 5時段分支 -->
       <div class="branch">
